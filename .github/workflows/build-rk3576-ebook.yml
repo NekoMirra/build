@@ -27,12 +27,6 @@ jobs:
           sudo docker image prune -af 2>/dev/null || true
           df -h /
 
-      - name: Install basic host deps
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq git-tools bc bison libssl-dev python3-dev swig dosfstools wget cpio unzip Debian "software-properties-common"
-          sudo pip install --upgrade pip 2>/dev/null || true
-
       - name: Build image (vendor kernel, native arm64)
         run: |
           sudo ./compile.sh build BOARD=rk3576-ebook-v10 BRANCH=vendor RELEASE="${{ inputs.RELEASE || 'jammy' }}" BUILD_MINIMAL=yes KERNEL_CONFIGURE=no
