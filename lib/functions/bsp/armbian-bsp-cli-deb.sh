@@ -286,7 +286,7 @@ function reversion_armbian-bsp-cli_deb_contents() {
 	# package, and cleanly takes over its file if it was ever installed.
 	cat <<- EOF >> "${control_file_new}"
 		Depends: bash, linux-base, u-boot-tools, initramfs-tools, lsb-release, fping, device-tree-compiler${depends_base_files}${EXTRA_BSPDEPS:+, ${EXTRA_BSPDEPS}}
-		Replaces: zram-config, linux-sysctl-defaults, armbian-bsp-cli-${BOARD}${EXTRA_BSP_NAME} (<< ${REVISION})
+		Replaces: zram-config, linux-sysctl-defaults, systemd, armbian-bsp-cli-${BOARD}${EXTRA_BSP_NAME} (<< ${REVISION})
 		Breaks: armbian-bsp-cli-${BOARD}${EXTRA_BSP_NAME} (<< ${REVISION})
 		Conflicts: linux-sysctl-defaults
 		Provides: armbian-bsp-cli, linux-sysctl-defaults
