@@ -1,0 +1,59 @@
+name: "Build RK3576 EBOOK V10 image"
+on:
+  workflow_dispatch:
+    inputs:
+      RELEASE:
+        description: "Ubuntu release"
+        default: "jammy"
+        type: string
+
+concurrency:
+  group: rk3576-ebook-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 300
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup 2>/dev/null || true
+          sudo docker image prune -af 2>/dev/null || true
+          df -h /
+
+      - name: Install basic host deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq git-tools bc bison libssl-dev python3-dev swig dosfstools wget cpio unzip Debian "software-properties-common"
+          sudo pip install --upgrade pip 2>/dev/null || true
+
+      - name: Build image (vendor kernel, native arm64)
+        run: |
+          sudo ./compile.sh build BOARD=rk3576-ebook-v10 BRANCH=vendor RELEASE="${{ inputs.RELEASE || 'jammy' }}" BUILD_MINIMAL=yes KERNEL_CONFIGURE=no
+        env:
+          SHARE_LOG: "yes"
+
+      - name: Upload image artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rk3576-ebook-v10-image
+          path: |
+            output/images/*
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload build logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rk3576-ebook-v10-logs
+          path: output/logs/*
+          if-no-files-found: ignore
+          retention-days: 7
